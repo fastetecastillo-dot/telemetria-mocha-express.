@@ -1,0 +1,27 @@
+
+name: Reporte Diario Mocha Express
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  procesar-telemetria:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extraer código
+        uses: actions/checkout@v4
+      
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Instalar librerías
+        run: pip install requests
+        
+      - name: Ejecutar sistema
+        env:
+          CLAVE_APP_GMAIL: ${{ secrets.CLAVE_APP_GMAIL }}
+        run: python alerta_mocha_express.py
