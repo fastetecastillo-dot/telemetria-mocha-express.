@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
           
       - name: Instalar librerías
-        run: pip install requests
+        run: pip install requests supabase
         
       - name: Ejecutar sistema
         env:
