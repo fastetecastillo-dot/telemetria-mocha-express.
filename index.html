@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas - Lancha Mocha Express</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 600px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { color: #004080; text-align: center; }
+        .alert-box { background: #fff3cd; color: #856404; padding: 12px; border-radius: 5px; font-size: 14px; margin-bottom: 20px; border-left: 5px solid #ffeeba; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #004080; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #002b5c; }
+        #mensaje { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+    <!-- Librería de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Reserva de Pasajes - Mocha Express</h2>
+    
+    <div class="alert-box">
+        ⚠️ <strong>Aviso Importante:</strong> El peso máximo de equipaje permitido por pasajero es de <strong>20 kg</strong>. Las reservas están sujetas a los días operativos autorizados por meteorología (Hmax ≤ 2.2m | Vmax ≤ 16 kn).
+    </div>
+
+    <form id="formReserva">
+        <div class="form-group">
+            <label for="nombre">Nombre Completo:</label>
+            <input type="text" id="nombre" required placeholder="Ej: Juan Pérez">
+        </div>
+
+        <div class="form-group">
+            <label for="rut">RUT o Pasaporte:</label>
+            <input type="text" id="rut" required placeholder="Ej: 12.345.678-9">
+        </div>
+
+        <div class="form-group">
+            <label for="correo">Correo Electrónico:</label>
+            <input type="email" id="correo" required placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="form-group">
+            <label for="fecha">Seleccionar Día Operativo:</label>
+            <select id="fecha" required>
+                <option value="">Cargando días operativos...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tramo">Trayecto:</label>
+            <select id="tramo" required>
+                <option value="Tirua - Isla Mocha">Tirúa ➔ Isla Mocha</option>
+                <option value="Isla Mocha - Tirua">Isla Mocha ➔ Tirúa</option>
+            </select>
+        </div>
+
+        <button type="submit">Confirmar Reserva</button>
+    </form>
+    <div id="mensaje"></div>
+</div>
+
+<script>
+    // ==========================================
+    // TUS CREDENCIALES DE SUPABASE CONFIGURADAS
+    // ==========================================
+    const SUPABASE_URL = 'https://sqnjzxaghorbqobgmph.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_HCBX9iS60_IbcSMSP6Pgvg_jmh9Skgv';
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Cargar días operativos en el selector
+    async function cargarDiasOperativos() {
+        const selectFecha = document.getElementById('fecha');
+        try {
+            const { data, error } = await _supabase
+                .from('dias_operativos')
+                .select('*')
+                .eq('estado', 'OPERATIVO')
+                .order('fecha', { ascending: true });
+
+            if (error) throw error;
+
+            selectFecha.innerHTML = '<option value="">Seleccione un día...</option>';
+            if (data && data.length > 0) {
+                data.forEach(dia => {
+                    let option = document.createElement('option');
+                    option.value = dia.fecha;
+                    option.textContent = `${dia.fecha} (${dia.ventana_horaria || 'Operativo'})`;
+                    selectFecha.appendChild(option);
+                });
+            } else {
+                selectFecha.innerHTML = '<option value="">No hay días operativos disponibles</option>';
+            }
+        } catch (err) {
+            console.error('Error cargando fechas:', err);
+            selectFecha.innerHTML = '<option value="">Error al cargar los días</option>';
+        }
+    }
+
+    cargarDiasOperativos();
+
+    // Guardar la reserva al enviar el formulario
+    document.getElementById('formReserva').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const nombre = document.getElementById('nombre').value;
+        const rut = document.getElementById('rut').value;
+        const correo = document.getElementById('correo').value;
+        const fecha = document.getElementById('fecha').value;
+        const tramo = document.getElementById('tramo').value;
+        const msgDiv = document.getElementById('mensaje');
+
+        msgDiv.style.color = '#004080';
+        msgDiv.textContent = 'Registrando reserva...';
+
+        const { data, error } = await _supabase
+            .from('reservas')
+            .insert([{ nombre: nombre, rut: rut, correo: correo, fecha_viaje: fecha, tramo: tramo }]);
+
+        if (error) {
+            msgDiv.style.color = 'red';
+            msgDiv.textContent = 'Error al guardar la reserva. Inténtalo de nuevo.';
+            console.error(error);
+        } else {
+            msgDiv.style.color = 'green';
+            msgDiv.textContent = '¡Reserva realizada con éxito! Te esperamos.';
+            document.getElementById('formReserva').reset();
+        }
+    });
+</script>
+
+</body>
+</html>
