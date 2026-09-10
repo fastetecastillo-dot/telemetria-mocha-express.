@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -65,15 +66,11 @@
 </div>
 
 <script>
-    // ==========================================
-    // TUS CREDENCIALES DE SUPABASE CONFIGURADAS
-    // ==========================================
     const SUPABASE_URL = 'https://sqnjzxaghorbqobgmph.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_HCBX9iS60_IbcSMSP6Pgvg_jmh9Skgv';
     
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Cargar días operativos en el selector
     async function cargarDiasOperativos() {
         const selectFecha = document.getElementById('fecha');
         try {
@@ -104,7 +101,6 @@
 
     cargarDiasOperativos();
 
-    // Guardar la reserva al enviar el formulario
     document.getElementById('formReserva').addEventListener('submit', async function(e) {
         e.preventDefault();
         
