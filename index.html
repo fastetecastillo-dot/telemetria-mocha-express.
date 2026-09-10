@@ -25,7 +25,7 @@
     <h2>Reserva de Pasajes - Mocha Express</h2>
     
     <div class="alert-box">
-        ⚠️ <strong>Aviso Importante:</strong> El peso máximo de equipaje permitido por pasajero es de <strong>20 kg</strong>. Las reservas están sujetas a los días operativos autorizados por meteorología (Hmax ≤ 2.2m | Vmax ≤ 16 kn).
+        ⚠️ <strong>Aviso Importante:</strong> El peso máximo de equipaje permitido por pasajero es de <strong>20 kg</strong>. Máximo <strong>10 pasajeros por viaje</strong>. Las reservas están sujetas a los días operativos autorizados por meteorología (Hmax ≤ 2.2m | Vmax ≤ 16 kn).
     </div>
 
     <form id="formReserva">
@@ -104,16 +104,41 @@
         e.preventDefault();
         
         const nombre = document.getElementById('nombre').value;
-        const rut = document.getElementById('rut').value; // CORREGIDO AQUÍ
+        const rut = document.getElementById('rut').value;
         const correo = document.getElementById('correo').value;
         const fecha = document.getElementById('fecha').value;
         const trayecto = document.getElementById('trayecto').value;
         const msgDiv = document.getElementById('mensaje');
 
         msgDiv.style.color = '#004080';
+        msgDiv.textContent = 'Verificando cupos disponibles...';
+
+        const CAPACIDAD_MAXIMA = 10;
+
+        // 1. Contar cuántas reservas ya existen para esa fecha y trayecto específico
+        const { count, error: countError } = await _supabase
+            .from('reservas')
+            .select('*', { count: 'exact', head: true })
+            .eq('fecha', fecha)
+            .eq('trayecto', trayecto);
+
+        if (countError) {
+            msgDiv.style.color = 'red';
+            msgDiv.textContent = 'Error al verificar cupos. Inténtalo de nuevo.';
+            console.error(countError);
+            return;
+        }
+
+        // 2. Validar si se alcanzó el límite de 10 personas
+        if (count >= CAPACIDAD_MAXIMA) {
+            msgDiv.style.color = 'red';
+            msgDiv.textContent = `Lo sentimos, este viaje ya completó el cupo máximo de ${CAPACIDAD_MAXIMA} pasajeros.`;
+            return;
+        }
+
         msgDiv.textContent = 'Registrando reserva...';
 
-        // CORREGIDO AQUÍ: Usando 'fecha' y 'trayecto' exactos como en la base de datos
+        // 3. Si hay espacio, guardar la reserva en Supabase
         const { data, error } = await _supabase
             .from('reservas')
             .insert([{ nombre: nombre, rut: rut, correo: correo, fecha: fecha, trayecto: trayecto }]);
