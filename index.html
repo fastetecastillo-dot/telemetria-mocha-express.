@@ -52,10 +52,10 @@
         </div>
 
         <div class="form-group">
-            <label for="tramo">Trayecto:</label>
-            <select id="tramo" required>
-                <option value="Tirua - Isla Mocha">Tirúa ➔ Isla Mocha</option>
-                <option value="Isla Mocha - Tirua">Isla Mocha ➔ Tirúa</option>
+            <label for="trayecto">Trayecto:</label>
+            <select id="trayecto" required>
+                <option value="Tirúa → Isla Mocha">Tirúa ➔ Isla Mocha</option>
+                <option value="Isla Mocha → Tirúa">Isla Mocha ➔ Tirúa</option>
             </select>
         </div>
 
@@ -104,18 +104,19 @@
         e.preventDefault();
         
         const nombre = document.getElementById('nombre').value;
-        const rut = document.getElementById('rut'.value);
+        const rut = document.getElementById('rut').value; // CORREGIDO AQUÍ
         const correo = document.getElementById('correo').value;
         const fecha = document.getElementById('fecha').value;
-        const tramo = document.getElementById('tramo').value;
+        const trayecto = document.getElementById('trayecto').value;
         const msgDiv = document.getElementById('mensaje');
 
         msgDiv.style.color = '#004080';
         msgDiv.textContent = 'Registrando reserva...';
 
+        // CORREGIDO AQUÍ: Usando 'fecha' y 'trayecto' exactos como en la base de datos
         const { data, error } = await _supabase
             .from('reservas')
-            .insert([{ nombre: nombre, rut: rut, correo: correo, fecha_viaje: fecha, tramo: tramo }]);
+            .insert([{ nombre: nombre, rut: rut, correo: correo, fecha: fecha, trayecto: trayecto }]);
 
         if (error) {
             msgDiv.style.color = 'red';
@@ -131,3 +132,4 @@
 
 </body>
 </html>
+
