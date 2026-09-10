@@ -40,8 +40,18 @@
         </div>
 
         <div class="form-group">
+            <label for="telefono">Número de Contacto / Teléfono:</label>
+            <input type="tel" id="telefono" required placeholder="Ej: +56912345678">
+        </div>
+
+        <div class="form-group">
             <label for="correo">Correo Electrónico:</label>
             <input type="email" id="correo" required placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="form-group">
+            <label for="peso">Peso (kg) <span style="font-weight: normal; color: #666;">(Opcional)</span>:</label>
+            <input type="text" id="peso" placeholder="Ej: 75 kg">
         </div>
 
         <div class="form-group">
@@ -105,7 +115,9 @@
         
         const nombre = document.getElementById('nombre').value;
         const rut = document.getElementById('rut').value;
+        const telefono = document.getElementById('telefono').value;
         const correo = document.getElementById('correo').value;
+        const peso = document.getElementById('peso').value || null; // Si está en blanco, se envía como nulo
         const fecha = document.getElementById('fecha').value;
         const trayecto = document.getElementById('trayecto').value;
         const msgDiv = document.getElementById('mensaje');
@@ -115,7 +127,7 @@
 
         const CAPACIDAD_MAXIMA = 10;
 
-        // 1. Contar cuántas reservas ya existen para esa fecha y trayecto específico
+        // 1. Validar aforo actual para esa fecha y trayecto
         const { count, error: countError } = await _supabase
             .from('reservas')
             .select('*', { count: 'exact', head: true })
@@ -129,7 +141,6 @@
             return;
         }
 
-        // 2. Validar si se alcanzó el límite de 10 personas
         if (count >= CAPACIDAD_MAXIMA) {
             msgDiv.style.color = 'red';
             msgDiv.textContent = `Lo sentimos, este viaje ya completó el cupo máximo de ${CAPACIDAD_MAXIMA} pasajeros.`;
@@ -138,10 +149,18 @@
 
         msgDiv.textContent = 'Registrando reserva...';
 
-        // 3. Si hay espacio, guardar la reserva en Supabase
+        // 2. Guardar registro completo incluyendo teléfono y peso opcional
         const { data, error } = await _supabase
             .from('reservas')
-            .insert([{ nombre: nombre, rut: rut, correo: correo, fecha: fecha, trayecto: trayecto }]);
+            .insert([{ 
+                nombre: nombre, 
+                rut: rut, 
+                telefono: telefono, 
+                correo: correo, 
+                peso: peso, 
+                fecha: fecha, 
+                trayecto: trayecto 
+            }]);
 
         if (error) {
             msgDiv.style.color = 'red';
@@ -157,4 +176,3 @@
 
 </body>
 </html>
-
